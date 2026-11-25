@@ -33,15 +33,27 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci
       - run: npm run build
+        env:
+          PAGES_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
       - uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: frontend/dist/
           if-no-files-found: error
+      - name: Package and check backend image
+        run: |
+          docker build -f backend/Dockerfile -t gymprogress-api:"$GITHUB_SHA" .
+          docker run -d --name api -p 127.0.0.1:3001:3001 -e SUPABASE_URL=https://example.supabase.co -e SUPABASE_PUBLISHABLE_KEY=test gymprogress-api:"$GITHUB_SHA"
+          curl --fail --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:3001/api/health
+          docker save gymprogress-api:"$GITHUB_SHA" | gzip > backend-image.tar.gz
       - uses: actions/upload-artifact@v4
         with:
-          name: backend-dist
-          path: backend/dist/
+          name: backend-image
+          path: backend-image.tar.gz
+          compression-level: 0
           if-no-files-found: error
 
   test:
@@ -60,3 +72,24 @@ jobs:
           name: coverage
           path: coverage/
           if-no-files-found: error
+
+  publish-image:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, build, test]
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend-image
+      - name: Publish verified backend image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}/api:$GITHUB_SHA"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker load -i backend-image.tar.gz
+          docker tag gymprogress-api:"$GITHUB_SHA" "$image"
+          docker push "$image"
