@@ -104,7 +104,7 @@ jobs:
           docker load -i backend-image.tar.gz
           docker tag gymprogress-api:"$GITHUB_SHA" "$image"
           docker push "$image"
-          echo "IMAGE_REF=$(docker inspect --format '{{index .RepoDigests 0}}' "$image")" >> "$GITHUB_ENV"
+          echo "IMAGE_REF=$image" >> "$GITHUB_ENV"
       - name: Deploy backend and verify revision
         env:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
