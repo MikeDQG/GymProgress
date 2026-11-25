@@ -25,4 +25,9 @@ describe('Preverjanje podatkov za prijavo in registracijo', () => {
   it('pri nepotrjeni prijavi uporabnika usmeri k potrditvenemu sporočilu', () => {
     expect(authError('email_not_confirmed')).toContain('potrdite e-naslov');
   });
+
+  it('pri napačnih podatkih prikaže skupno obvestilo za e-naslov in geslo', () => {
+    let message = authError('invalid_credentials');
+    expect(message).toBe('Napačen e-naslov ali geslo.');
+  });
 });
