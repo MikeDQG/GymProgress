@@ -1,10 +1,24 @@
 # GymProgress
 
+[![CI/CD](https://github.com/MikeDQG/GymProgress/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/MikeDQG/GymProgress/actions/workflows/ci-cd.yml)
+
+[Odpri aplikacijo GymProgress](https://mikedqg.github.io/GymProgress/)
+
 Spletna aplikacija za načrtovanje treningov in spremljanje napredka.
 Implementirane so **US-01 do US-07**: registracija in prijava, lastni programi,
 povabila in potrditev povezave s trenerjem, dodelitev programa, beleženje serij,
 zaključek treninga z volumnom ter zaznavanje in prikaz novih osebnih rekordov.
 Vmesnik je preprost, v sivinskih odtenkih. Funkcionalnosti po US-07 še niso implementirane.
+
+## CI/CD
+
+Vsak pull request v `main` in vsak push na `main` sproži tri obvezne preverbe.
+
+- **lint** z ESLintom preveri TypeScript na frontendu in backendu.
+- **build** uporabi npm cache, zgradi frontend za GitHub Pages ter zapakira in preizkusi Docker sliko za Render. Oba rezultata shrani kot artefakta.
+- **test** zažene Vitest za oba dela aplikacije ter shrani pokritost v formatih HTML in LCOV.
+
+Po uspešnih preverjanjih na pushu v `main` job **deploy** v okolju `production` prevzame zgrajeno sliko, jo objavi v GHCR in na Renderju preveri različico API-ja ter povezavo s Supabase Auth. Nato objavi zgrajeni frontend na Pages. Potek blokirane in nato uspešne združitve prikazuje [demonstracijski PR #2](https://github.com/MikeDQG/GymProgress/pull/2).
 
 ## Lokalni zagon
 
@@ -59,8 +73,8 @@ Za enotno oblikovanje TypeScript, TSX, HTML, CSS in JSON datotek uporabite
 `npm run format`. Ukaz `npm run format:check` preveri oblikovanje brez spreminjanja datotek.
 
 Frontend se zgradi v `frontend/dist`, backend v `backend/dist`. Zgrajeni backend
-zaženete z `npm start -w backend`. Pri gostovanju frontenda je treba `/api`
-posredovati backendu prek HTTPS; Vite proxy deluje samo v razvoju.
+zaženete z `npm start -w backend`. Produkcijski frontend ob gradnji prebere naslov
+backenda iz `VITE_API_BASE_URL`. Lokalno Vite posreduje zahteve `/api` na Express.
 
 
 ## Programi in treningi

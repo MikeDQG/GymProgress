@@ -5,5 +5,7 @@ COPY package.json package-lock.json ./
 COPY backend/package.json backend/package.json
 RUN npm ci --omit=dev --workspace=backend && npm cache clean --force
 COPY backend/dist backend/dist
+ARG APP_REVISION
+ENV APP_REVISION=$APP_REVISION
 USER node
 CMD ["node", "backend/dist/server.js"]

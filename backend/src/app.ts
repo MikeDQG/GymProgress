@@ -30,7 +30,7 @@ export function createApp(
     next();
   });
   app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok' });
+    res.json({ status: 'ok', revision: process.env.APP_REVISION });
   });
   app.get('/api/health/auth', async (_req, res) => {
     if (!authHealth) {
