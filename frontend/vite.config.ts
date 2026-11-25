@@ -11,6 +11,7 @@ const projectId = createHash('sha256')
   .slice(0, 12);
 
 export default defineConfig({
+  base: process.env.PAGES_BASE_PATH ?? '/',
   cacheDir: join(
     tmpdir(),
     'gymprogress-vite',

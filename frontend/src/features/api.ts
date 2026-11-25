@@ -1,3 +1,5 @@
+export const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '') + '/api';
+
 export class ApiError extends Error {
   readonly code?: string;
 
@@ -10,7 +12,7 @@ export class ApiError extends Error {
 
 export function createApi(token: string) {
   return async function api<T>(path: string, method = 'GET', payload?: unknown): Promise<T> {
-    const response = await fetch(`/api${path}`, {
+    const response = await fetch(`${apiBase}${path}`, {
       method,
       headers: {
         Authorization: `Bearer ${token}`,
