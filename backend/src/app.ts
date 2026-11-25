@@ -8,12 +8,25 @@ import { applicationRole } from './roles.js';
 export function createApp(
   clientForToken: (token: string) => SupabaseClient,
   authHealth?: () => Promise<{ reachable: boolean }>,
+  frontendOrigin?: string,
 ) {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet());
   app.use('/api', (_req, res, next) => {
     res.set('Cache-Control', 'no-store');
+    if (frontendOrigin) {
+      res.vary('Origin');
+      if (_req.get('Origin') === frontendOrigin) {
+        res.set('Access-Control-Allow-Origin', frontendOrigin);
+        if (_req.method === 'OPTIONS') {
+          res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
+          res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+          res.sendStatus(204);
+          return;
+        }
+      }
+    }
     next();
   });
   app.get('/api/health', (_req, res) => {

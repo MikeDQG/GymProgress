@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { authError, validateCredentials } from './validation';
 import { Dashboard } from './features/Dashboard';
+import { apiBase } from './features/api';
 
 type Profile = {
   id: string;
@@ -51,7 +52,7 @@ export function App() {
     setError('');
     void (async () => {
       try {
-        const response = await fetch('/api/me', {
+        const response = await fetch(`${apiBase}/me`, {
           headers: { Authorization: `Bearer ${session.access_token}` },
           signal: controller.signal,
         });
@@ -127,7 +128,7 @@ export function App() {
           password,
           options: {
             data: { role, ime: ime.trim(), priimek: priimek.trim() },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: new URL(import.meta.env.BASE_URL, window.location.origin).href,
           },
         });
         if (error) {

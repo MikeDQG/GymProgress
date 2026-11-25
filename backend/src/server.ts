@@ -8,7 +8,8 @@ if (!url || !key)
 const app = createApp(
   (token) => createBackendClient(url, key, token),
   () => checkAuthConnection(url, key),
+  process.env.FRONTEND_ORIGIN,
 );
-app.listen(Number(process.env.PORT ?? 3001), '127.0.0.1', () =>
+app.listen(Number(process.env.PORT ?? 3001), process.env.HOST ?? '127.0.0.1', () =>
   console.log('GymProgress API je pripravljen.'),
 );
